@@ -710,6 +710,19 @@ void XC7Packer::pack_bram()
             }
         }
     }
+
+    // Cascading pins have no routing associated, clean these connections
+    for (CellInfo *ci : all_brams) {
+        for (auto &port : ci->ports) {
+            // Disconnect constant cascaded inputs
+            if (port.first == id_CASCADEINA || port.first == id_CASCADEINB) {
+                if (port.second.net == nullptr)
+                    continue;
+                if (port.second.net->name == ctx->id("$PACKER_GND_NET"))
+                    ci->disconnectPort(port.first);
+            }
+        }
+    }
 }
 
 void XilinxPacker::pack_inverters()
